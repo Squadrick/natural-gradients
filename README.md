@@ -160,7 +160,7 @@ I ran into another problem where `fish` was a singular matrix, so I couldn't cal
 	  # Compute v * s_inv * u_t * b from the left to avoid forming large intermediate matrices.
 	  return tf.matmul(v, tf.matmul(s_inv, tf.matmul(u, tf.reshape(b, [-1, 1]), transpose_a=True)))
 
-I finally could train the simple one layer network with a learning rate of `1e-1` and batch size of `32`, here's the convergence graph along with vanilla gradients thrown in to show that all the work is worth something. 
+I finally could train the simple one layer network with a learning rate of `1e-1` and batch size of `32`, here's the convergence graph along with vanilla gradients thrown in to show that all the work is worth something. As you can see the natural gradient descent(orange) reaches the same loss as conventional gradient descent(blue) is much few iterations.
 
 ![alt text][naive-plot]
 
@@ -168,4 +168,4 @@ Calculating the hessian and its inverse is shown to be expensive because each it
 
 ### Conjugate Gradient Descent
 
-[naive-plot]: https://github.com/Squadrick/natural-gradients/blob/master/results/naive-results.png "Lol graph v1"
+[naive-plot]: https://github.com/Squadrick/natural-gradients/blob/master/results/naive-results.png "Naive descent comparision"
