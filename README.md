@@ -44,6 +44,8 @@ Fisher information is the second derivative of KL divergence
 F<sub>&theta;</sub> = &#916;<sub>&theta;'</sub><sup>2</sup> D(&theta;'||&theta;)|<sub>&theta;'=&theta;</sup>
 </center>
 
+
+
 <center>
 F<sub>&theta;</sub> = &#916;<sub>&theta;</sub><sup>2</sup> D(&theta;||&theta;')|<sub>&theta;'=&theta;</sup>
 </center>
