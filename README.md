@@ -162,7 +162,7 @@ I ran into another problem where `fish` was a singular matrix, so I couldn't cal
 
 I finally could train the simple one layer network with a learning rate of `1e-1` and batch size of `32`, here's the convergence graph along with vanilla gradients thrown in to show that all the work is worth something. 
 
-Calculating the hessian and its inverse is shown to be expensive because each iteration of natural gradient descent took around 30 seconds. As compared to regular gradient descent, where I did 1000 iterations in less than 30 seconds. Clearly, we need a more efficient way to do natural gradient descent, one way is to use conjugate descent.
+Calculating the hessian and its inverse is shown to be expensive because each iteration of natural gradient descent took around 30 seconds. As compared to regular gradient descent, where I did 1000 iterations in less than 3 seconds. Clearly, we need a more efficient way to do natural gradient descent, one of the most popular ways is to use conjugate descent.
 
 ### Conjugate Gradient Descent
 
