@@ -6,62 +6,66 @@ So I went ahead and implemented a couple of popular actor-critic methods like DD
 
 The difficulty with TRPO is that it uses natural gradients, as opposed to regular gradients.
 
-Natural gradients are pretty freaking cool, tbh.
-Normally we assume the parameter space `S` to Euclidean with an orthonormal coordinate system. So that's the normal 3D space we're familiar with. Using regular gradients here would be ideal.
+Before reading this post, it is advised that you're comfortable with vector calculus and gradient descent.
 
-However, when `S` is a curved manifold, there is no orthonormal coordinate system. This is particularly when we're in non-Euclidean space, which is what we deal with in most neural network. So the gradients we calculate aren't the true gradients.
+Normally we assume the parameter space $S$ to Euclidean with an orthonormal coordinate system. So that's the normal 3D space we're familiar with. Using regular gradients here would be ideal.
 
-So let `L(w)` be the loss function defined in `S`, the direction of steepest descent of `L(w)` at `w` is defined as the vector `dw` that minimizes `L(w+dw)`, where `dw` has a fixed length.
+However, when $S$ is a curved manifold, there is no orthonormal coordinate system. This is particularly when we're in non-Euclidean space, which is what we deal with in most neural network. So the gradients we calculate aren't the true gradients.
+
+So let $L(w)$ be the loss function defined in $S$ ($w \in S)$, the direction of steepest descent of $L(w)$ at $w$ is defined as the vector $dw$ that minimizes $L(w+dw)$, where $dw$ has a fixed length.
 
 According to this one baller dude called Riemann, the steepest direction is given by
+$$
+-\nabla_{nat} L(w) = -G^{-1}\nabla L(w)
+$$
 
-<center> -&#916;<sub>nat</sub>L(w) = -G<sup>-1</sup> &#916;L(w)
+where $\nabla_{nat}$ stands natural gradient, $\nabla$ is conventional gradient, and $G$ is a matrix called the Riemannian metric.
 
+Note that $G$ depends on the $w$, and so is location dependant.
 
-where &#916;<sub>nat</sub> stands natural gradient, &#916; is conventional gradient, and `G` is a matrix called the Riemannian metric.
-
-Note that `G` depends on the `w`, and so is location dependant.
-
-Intuitively, the Riemannian metric tensor describes how the geometry of a manifold affects a differential patch, `dw`, at the point `w`. The length of a line between two points on `dw` is the distance between them. The Riemannian metric tensor either stretches or shrinks that line and the resulting length is the distance between the two points on the manifold.
+Intuitively, the Riemannian metric tensor describes how the geometry of a manifold affects a differential patch, $dw$, at the point $w$. The length of a line between two points on $dw$ is the distance between them. The Riemannian metric tensor either stretches or shrinks that line and the resulting length is the distance between the two points on the manifold.
 
 When the space is Euclidean, G is an identity matrix, so
 
-<center> &#916;<sub>nat</sub>L(w) = &#916;L(w)
+$$
+\nabla_{nat} L(w) = \nabla L(w)
+$$
 
-This suggests that the gradient descent algorithm should be
+Using natural gradients, suggests that the gradient descent algorithm should be modified to
 
-<center> w<sub>t+1</sub> = w<sub>t</sub> - &alpha; &#916;<sub>nat</sub>L(w<sub>t</sub>)
+$$
+w_{t+1} = w_{t} - \alpha \nabla_{nat} L(w)
+$$
 
-where &alpha; is the learning rate
+where $\alpha$ is the learning rate
 
-For neural networks, `G`, the Riemannian metric is given by the Fisher Information Matrix.
+For neural networks, $G$, the Riemannian metric is given by the Fisher Information Matrix.
 
 ### Fisher Information
 
 Fisher information is the second derivative of KL divergence
 
-<center>
-F<sub>&theta;</sub> = &#916;<sub>&theta;'</sub><sup>2</sup> D(&theta;'||&theta;)|<sub>&theta;'=&theta;</sup>
-</center>
+$$
+F_{\theta} = \nabla_{\theta'}^{2} D(\theta'\|\theta)|_{\theta'=\theta}
+$$
 
+$$
+F_{\theta} = \nabla_{\theta}^{2} D(\theta\|\theta')|_{\theta'=\theta}
+$$
 
+Where $D(\phi\|\beta)$ is the KL divergence between the output distributions of the same model parameterised by $\phi$ and $\beta$, where both belong to the same parameter space.
 
-<center>
-F<sub>&theta;</sub> = &#916;<sub>&theta;</sub><sup>2</sup> D(&theta;||&theta;')|<sub>&theta;'=&theta;</sup>
-</center>
-
-Where D(&phi;||&beta;) is the KL divergence between the output distributions of the same model parameterised by &phi; and &beta;, where both belong to the same parameter space.
-
-Both directions of KL divergence have the same  second-order derivative at the point where the distributions match, so locally KL divergence is sort've symmetric.
+Both directions of KL divergence have the same  second-order derivative at the point where the distributions match, so locally KL divergence is symmetric.
 
 Using second-order Taylor expansion, we can write
 
-<center>
-D(&theta;'||&theta;) = 0.5 * (&theta;' - &theta;)<sup>T</sup> F <sub>&theta;</sub>(&theta;' - &theta;)
-</center>
-<sub><sub>We assume &theta;' - &theta; is small, else the approximation won't work.</sub></sub>
+$$
+D(\theta'\|\theta) = \frac{1}{2}(\theta'-\theta)^T F_{\theta}(\theta'-\theta)
+$$
 
-Since KL divergence is similar to distance between two distributions, Fisher Information gives you the *local* distance between distributions. Intuitively, it gives the change in the distribution for a small change in parameters. This is why we can use it as `G`.
+<sub><sub>We assume $\theta'-\theta$ is small, else the approximation won't work.</sub></sub>
+
+Since KL divergence is similar to distance between two distributions, Fisher Information gives you the *local* distance between distributions. Intuitively, it gives the change in the distribution for a small change in parameters. This is why we can use it as $G$.
 
 ##### Tensorflow Code
 
@@ -167,5 +171,6 @@ I finally could train the simple one layer network with a learning rate of `1e-1
 Calculating the hessian and its inverse is shown to be expensive because each iteration of natural gradient descent took around 30 seconds. As compared to regular gradient descent, where I did 1000 iterations in less than 3 seconds. Clearly, we need a more efficient way to do natural gradient descent, one of the most popular ways is to use conjugate descent.
 
 ### Conjugate Gradient Descent
+
 
 [naive-plot]: https://github.com/Squadrick/natural-gradients/blob/master/results/naive-results.png "Naive descent comparision"
