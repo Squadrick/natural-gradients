@@ -48,12 +48,17 @@ output = tf.matmul(X, tf.reshape(W, [14*14, 10]))
 
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=Y, logits=output))
 
+probs = tf.nn.softmax(output)
 grad_cov = tf.gradients(loss, W)
 
-pd = CategoricalPd(output)
+pd = CategoricalPd(probs)
 kl = tf.reduce_mean(pd.self_kl())
 lr = tf.placeholder(tf.float32, ())
-fish = tf.hessians(kl, W)
+fish = tf.hessians(kl, W)[0]
+
+log_grad = tf.gradients(tf.log(probs), W)[0]
+fish_other = tf.matmul(tf.expand_dims(log_grad, 1), tf.expand_dims(log_grad, 0))
+print(fish_other)
 
 def pinv(A, b, reltol=1e-6):
   s, u, v = tf.svd(A)
@@ -67,7 +72,7 @@ def pinv(A, b, reltol=1e-6):
 
 #fish_inv = tf.matrix_inverse(fish)
 #grad_true = tf.matmul(grad_cov, fish_inv[0])
-grad_true = pinv(fish[0], grad_cov)
+grad_true = pinv(fish, grad_cov)
 grad_true = tf.reshape(grad_true, [-1])
 opt = tf.train.GradientDescentOptimizer(lr)
 l = [(grad_true, W)]
@@ -96,5 +101,5 @@ def util_function_lab(labels):
 for i in range(10000):
     x, y = mnist.train.next_batch(16)
     x = util_function_img(x)
-    l, _ = sess.run([loss, train], feed_dict={x_in:x, Y:y, lr:1e-1})
+    l, _ = sess.run([loss, train], feed_dict={x_in:x, Y:y, lr:4e-4})
     print(l)
